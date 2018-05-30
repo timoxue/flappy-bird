@@ -1,0 +1,4 @@
+*.dll
+LICENSE.*
+flappy-bird.exe
+./test/*
