@@ -8,8 +8,6 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-var times = 0
-
 type bird struct {
 	time       int
 	textures   []*sdl.Texture
@@ -25,19 +23,15 @@ func newBird(renderer *sdl.Renderer) (*bird, error) {
 		}
 		textures = append(textures, texture)
 	}
-	return &bird{textures: textures, x: 10, y: 100, w: 50, h: 43}, nil
+	return &bird{textures: textures, x: 30, y: 200, w: 50, h: 43}, nil
 }
 
 func (bird *bird) render(renderer *sdl.Renderer) error {
 	rect := &sdl.Rect{X: bird.x, Y: 600 - bird.y - bird.h/2, W: bird.w, H: bird.h}
-	if err := renderer.Copy(bird.textures[times], nil, rect); err != nil {
+	if err := renderer.Copy(bird.textures[bird.time/10%4], nil, rect); err != nil {
 		return fmt.Errorf("Can not copy bird image: %v", err)
 	}
-	if times < 4 {
-		times++
-	} else {
-		times = 0
-	}
+	bird.time++
 	return nil
 }
 

@@ -14,6 +14,7 @@ var (
 	err        error
 	background *bg
 	flybird    *bird
+	events     chan sdl.Event
 )
 
 func intialize() {
@@ -31,38 +32,48 @@ func intialize() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Could not create window and renderer %v", err)
 	}
+	events = make(chan sdl.Event)
+	go func(events chan sdl.Event) {
+		for {
+			select {
+			case events <- sdl.WaitEvent():
+			default:
+			}
+		}
+	}(events)
 }
 
 func loop() {
-	go func() {
-		tick := time.Tick(10 * time.Millisecond)
-		for {
-			select {
-			case <-tick:
-				background.loop(renderer)
-				flybird.render(renderer)
-				renderer.Present()
+	tick := time.Tick(10 * time.Millisecond)
+	for {
+		select {
+		case e := <-events:
+			switch e.(type) {
+			case *sdl.QuitEvent:
+				return
 			}
-
+		case <-tick:
+			background.loop(renderer)
+			flybird.render(renderer)
+			renderer.Present()
 		}
+	}
 
-	}()
 }
 
-func update() {
+func update(events <-chan sdl.Event, renderer *sdl.Renderer) {
 
 }
 
 func destroy() {
 	sdl.Delay(3000)
-	background.destory()
 	flybird.destroy()
+	background.destory()
 	window.Destroy()
 }
 
 func main() {
 	intialize()
 	loop()
-	update()
 	destroy()
 }
